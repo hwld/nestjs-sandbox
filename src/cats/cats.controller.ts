@@ -6,28 +6,35 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
+  UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { CatsService } from './cats.service';
-import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
+import { CreateCatDtoClass } from './dto/create-cat.dto';
+import { DummyInterceptor } from 'src/dummy/dummy.interceptor';
+import { Request } from 'express';
 
 @Controller('cats')
 export class CatsController {
   constructor(private readonly catsService: CatsService) {}
 
   @Post()
-  create(@Body() createCatDto: CreateCatDto) {
+  create(@Body() createCatDto: CreateCatDtoClass) {
     console.log(createCatDto);
     return this.catsService.create(createCatDto);
   }
 
   @Get()
-  findAll() {
+  @UseInterceptors(DummyInterceptor)
+  findAll(@Req() req: Request) {
+    console.log((req as any)['user']);
     return this.catsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.catsService.findOne(+id);
   }
 
