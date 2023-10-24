@@ -7,11 +7,7 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    throw new HttpException(
-      { code: 1, message: 'a' },
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      { cause: new Error('eee') },
-    );
+    throw new HttpException('fｆｄｓｆさo', HttpStatus.INTERNAL_SERVER_ERROR);
     return this.appService.getHello();
   }
 }

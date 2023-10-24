@@ -1,8 +1,10 @@
-import { Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import { ArgumentsHost, Catch } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
 
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException) {
+@Catch()
+export class HttpExceptionFilter extends BaseExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    super.catch(exception, host);
     console.error(exception);
   }
 }
