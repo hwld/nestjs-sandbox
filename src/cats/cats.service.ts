@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
-import { Cat } from './entities/cat.entity';
 
 @Injectable()
 export class CatsService {
-  private readonly cats: Cat[] = [];
-
   create(createCatDto: CreateCatDto) {
     console.log(createCatDto);
     return 'This action adds a new cat';
