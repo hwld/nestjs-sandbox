@@ -14,7 +14,6 @@ import { CatsService } from './cats.service';
 import { UpdateCatDto } from './dto/update-cat.dto';
 import { CreateCatDtoClass } from './dto/create-cat.dto';
 import { DummyInterceptor } from 'src/dummy/dummy.interceptor';
-import { Request } from 'express';
 
 @Controller('cats')
 export class CatsController {
@@ -28,8 +27,8 @@ export class CatsController {
 
   @Get()
   @UseInterceptors(DummyInterceptor)
-  findAll(@Req() req: Request) {
-    console.log((req as any)['user']);
+  findAll() {
+    throw new Error('');
     return this.catsService.findAll();
   }
 
