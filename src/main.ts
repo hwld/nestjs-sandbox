@@ -3,10 +3,14 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './http-exception/http-exception.filter';
 import metadata from './metadata';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { snapshot: true });
   const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalPipes(
+    new ValidationPipe({ transform: true, validateCustomDecorators: true }),
+  );
   app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
 
   const config = new DocumentBuilder()

@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { PrismaUserService } from './prisma-user.service';
@@ -15,9 +14,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiBody, ApiProperty } from '@nestjs/swagger';
 import { AuthService } from './auth/auth.service';
 import bcrypt from 'bcrypt';
+import { ValidatedUser } from './types';
+import { ValidUser } from './valid-user/valid-user.decorator';
 
 class LoginDTO {
-  @ApiProperty({ default: 'me' })
+  @ApiProperty({ default: 'hwld' })
   username: string;
 
   @ApiProperty({ default: 'password' })
@@ -36,14 +37,14 @@ export class AppController {
   @UseGuards(AuthGuard('local'))
   @Post('auth/login')
   @ApiBody({ type: LoginDTO })
-  async login(@Request() req: any) {
-    return this.authService.login(req.user);
+  async login(@ValidUser() user: ValidatedUser) {
+    return this.authService.login(user);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
-  async getProfile(@Request() req: any) {
-    return req.user;
+  async getProfile(@ValidUser() user: ValidatedUser) {
+    return user;
   }
 
   @Get('post/:id')
@@ -86,6 +87,12 @@ export class AppController {
     return this.userService.createUser({
       data: { username: userData.username, passwordHash },
     });
+  }
+
+  @Post('test')
+  @ApiBody({ type: ValidatedUser })
+  async test(@Body() user: ValidatedUser) {
+    return user;
   }
 
   @Get('user')
