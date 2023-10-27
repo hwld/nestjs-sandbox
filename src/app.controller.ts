@@ -1,14 +1,50 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { UserService } from './user.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { PrismaUserService } from './prisma-user.service';
 import { PostService } from './post.service';
 import { CreateUserDTO } from './create-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiBody, ApiProperty } from '@nestjs/swagger';
+import { AuthService } from './auth/auth.service';
+import bcrypt from 'bcrypt';
+
+class LoginDTO {
+  @ApiProperty({ default: 'me' })
+  username: string;
+
+  @ApiProperty({ default: 'password' })
+  password: string;
+}
 
 @Controller()
+@ApiBearerAuth()
 export class AppController {
   constructor(
-    private readonly userService: UserService,
+    private authService: AuthService,
+    private readonly userService: PrismaUserService,
     private readonly postService: PostService,
   ) {}
+
+  @UseGuards(AuthGuard('local'))
+  @Post('auth/login')
+  @ApiBody({ type: LoginDTO })
+  async login(@Request() req: any) {
+    return this.authService.login(req.user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  async getProfile(@Request() req: any) {
+    return req.user;
+  }
 
   @Get('post/:id')
   async getPostById(@Param('id') id: string) {
@@ -35,17 +71,26 @@ export class AppController {
   @Post('post')
   async createDraft(
     // ...
-    @Body() postData: { title: string; content?: string; authorEmail: string },
+    @Body() postData: { title: string; content?: string; authorName: string },
   ) {
-    const { title, content, authorEmail } = postData;
+    const { title, content, authorName } = postData;
     return this.postService.createPost({
-      data: { title, content, author: { connect: { email: authorEmail } } },
+      data: { title, content, author: { connect: { username: authorName } } },
     });
   }
 
   @Post('user')
+  @ApiBody({ type: CreateUserDTO })
   async signupUser(@Body() userData: CreateUserDTO) {
-    return this.userService.createUser({ data: userData });
+    const passwordHash = await bcrypt.hash(userData.password, 10);
+    return this.userService.createUser({
+      data: { username: userData.username, passwordHash },
+    });
+  }
+
+  @Get('user')
+  async getAllUsers() {
+    return this.userService.users({ select: { username: true } });
   }
 
   @Delete('post/:id')
